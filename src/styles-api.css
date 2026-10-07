@@ -1,0 +1,57 @@
+/* ===== Фото товаров и категорий ===== */
+.pimg {
+  overflow: hidden;
+}
+
+.pimg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pimg.big .ph {
+  font-size: 110px;
+}
+
+.cat img {
+  display: block;
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.desc {
+  color: var(--mute);
+}
+
+/* ===== Админ-панель ===== */
+.aform {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0 16px;
+}
+
+.aform .wide {
+  grid-column: 1 / -1;
+}
+
+.arow {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+@media (max-width: 620px) {
+  .aform {
+    grid-template-columns: 1fr;
+  }
+
+  .arow {
+    grid-template-columns: 1fr 1fr;
+  }
+}
