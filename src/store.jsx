@@ -75,7 +75,7 @@ export function StoreProvider({ children }) {
     return order
   }
 
-  // true/false — подходит/не подходит; null — авто не выбрано
+  // true/false — подходит илине подходит; null — авто не выбрано
   const fits = (p) => {
     if (!car.make) return null
     if (p.fits.includes('*')) return true

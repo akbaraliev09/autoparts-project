@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CATEGORIES } from '../data.js'
 
-// Фото товара. Если фото нет или оно не загрузилось — показывается значок категории.
+// Фото товара. Если фото нет в конт. или оно не загрузилось — показывается значок категории.
 export default function ProductImage({ p }) {
   const [broken, setBroken] = useState(false)
   const icon = CATEGORIES.find((c) => c.name === p.category)?.icon

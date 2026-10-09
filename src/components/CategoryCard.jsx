@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useStore } from '../store.jsx'
 
+// карт категоррия
+
 export default function CategoryCard({ c }) {
   const { t } = useStore()
   const [broken, setBroken] = useState(false)

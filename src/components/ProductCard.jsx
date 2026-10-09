@@ -3,6 +3,8 @@ import { useStore } from '../store.jsx'
 import { CATEGORIES, money } from '../data.js'
 import ProductImage from './ProductImage.jsx'
 
+// карточки продуктов
+
 export function FitBadge({ p }) {
   const { fits, t } = useStore()
   const f = fits(p)

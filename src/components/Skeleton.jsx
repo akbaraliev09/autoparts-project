@@ -1,4 +1,4 @@
-// Заглушка на время загрузки данных
+// ззаглушка на время загрузки данных
 export default function Skeleton({ count = 4 }) {
   return (
     <div className="grid">

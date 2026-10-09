@@ -5,7 +5,7 @@ import { CATEGORIES, money } from '../data.js'
 
 const EMPTY = { name: '', article: '', brand: '', category: 'Двигатель', price: '', stock: 10, seller: 'AutoParts KG', image: '', description: '', specsText: '' }
 
-// Превращает строки "Тип: Синтетика" в объект { Тип: 'Синтетика' }
+// Превращает строки "Тип: Синтетика" в объект
 const parseSpecs = (text) =>
   Object.fromEntries(
     text

@@ -5,6 +5,8 @@ import ThemeToggle from './ThemeToggle.jsx'
 import LangSwitch from './LangSwitch.jsx'
 import { HeartIcon, CartIcon, UserIcon } from './Icons.jsx'
 
+// хедер сайта
+
 export default function Header() {
   const { cartCount, favs, user, t } = useStore()
   const [open, setOpen] = useState(false)

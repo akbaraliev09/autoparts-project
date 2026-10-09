@@ -1,7 +1,6 @@
 import { PRODUCTS } from './data.js'
 
-// Вставьте сюда адрес вашего MockAPI (без /products на конце), например:
-// export const API_URL = 'https://abc123.mockapi.io/api/v1'
+// Адрес мокАпи
 export const API_URL = 'https://6a8a91c655d899aede9b609b.mockapi.io/api'
 
 const norm = (p) => ({ ...p, id: String(p.id) })
@@ -16,7 +15,6 @@ async function request(path, options) {
   return res.json()
 }
 
-// Если API_URL пустой, сайт работает на локальных данных из data.js
 export async function getProducts() {
   if (!API_URL) return PRODUCTS.map(norm)
   const list = await request('/products')

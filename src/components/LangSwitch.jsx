@@ -1,5 +1,7 @@
 import { useStore } from '../store.jsx'
 
+// окно смены языка
+
 export default function LangSwitch() {
   const { lang, setLang } = useStore()
   return (

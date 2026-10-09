@@ -1,5 +1,7 @@
 import { useStore } from '../store.jsx'
 
+// фуутер
+
 export default function Footer() {
   const { t } = useStore()
   return (

@@ -1,5 +1,7 @@
 import { Component } from 'react'
 
+// окно ошибки
+
 export default class ErrorBoundary extends Component {
   state = { error: null }
 

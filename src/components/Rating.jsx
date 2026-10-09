@@ -1,4 +1,4 @@
-// Звёзды рейтинга. Если передан onChange, звёзды кликабельны.
+// Звёзды рейтинга. Если передан ончейндж, звёзды кликабельны.
 export default function Rating({ value = 0, onChange }) {
   return (
     <span className="stars" aria-label={`Рейтинг ${value}`}>
