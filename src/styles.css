@@ -28,7 +28,7 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 80px;
-  overflow-y: scroll; /* всегда показывает полосу прокрутки, чтобы хедер не прыгал */
+  overflow-y: scroll;
 }
 
 body {
@@ -54,7 +54,7 @@ select {
   outline-offset: 2px;
 }
 
-/* ===== Футер всегда внизу ===== */
+/* ===== Фуутер ===== */
 #root {
   min-height: 100vh;
   display: flex;
@@ -81,7 +81,7 @@ main {
   max-width: 640px;
 }
 
-/* ===== Header ===== */
+/* ===== хедер ===== */
 header {
   position: sticky;
   top: 0;
@@ -211,7 +211,7 @@ nav a.active {
   width: 100%;
 }
 
-/* ===== Hero ===== */
+/* ===== херо ===== */
 .hero {
   background: var(--ink);
   color: #fff;
@@ -635,7 +635,7 @@ label select {
   font-size: 14px;
 }
 
-/* ===== Footer и уведомления ===== */
+/* ===== фуутер и уведомления ===== */
 footer {
   margin-top: 64px;
   background: var(--ink);
@@ -665,7 +665,7 @@ footer {
   transform: translateX(-50%);
 }
 
-/* ===== Планшет ===== */
+/* ===== Верстка Планшет ===== */
 @media (max-width: 980px) {
   nav {
     display: none;
@@ -694,7 +694,7 @@ footer {
   }
 }
 
-/* ===== Телефон ===== */
+/* ===== Верстка Телефон ===== */
 @media (max-width: 620px) {
   .hbar {
     gap: 8px;
@@ -729,7 +729,7 @@ footer {
   }
 }
 
-/* ===== Кнопки-иконки, бургер-меню ===== */
+/* ===== Кнопки-иконки, бургер меню ===== */
 button.ib {
   background: none;
   border: 0;
@@ -792,7 +792,7 @@ button.ib {
   margin: 6px 0 0;
 }
 
-/* ===== Skeleton и пагинация ===== */
+/* ===== скелетон и пагинация ===== */
 .skel .line {
   height: 14px;
   border-radius: 6px;
@@ -856,7 +856,7 @@ button.ib {
   cursor: pointer;
 }
 
-/* ===== Хедер без поиска: длинные слова не ломают вёрстку ===== */
+/* ===== Хедер без поиска ===== */
 .icons {
   margin-left: auto;
 }
@@ -946,4 +946,3 @@ header.scrolled {
   outline: 2px solid var(--red);
   outline-offset: 2px;
 }
-
