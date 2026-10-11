@@ -13,10 +13,11 @@ export default function Auth() {
   const r = await loginGoogle()
   r ? setErr(r) : nav('/account')
 }
-  const submit = (e) => {
+    const submit = async (e) => {
     e.preventDefault()
     if (f.password.length < 6) return setErr('Пароль должен быть не короче 6 символов')
-    const r = mode === 'login' ? login(f.email, f.password) : register(f.name, f.email, f.password)
+    setErr('')
+    const r = await (mode === 'login' ? login(f.email, f.password) : register(f.name, f.email, f.password))
     r ? setErr(r) : nav('/account')
   }
   return (

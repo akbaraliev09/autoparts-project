@@ -1,6 +1,6 @@
-import { collection, doc, setDoc, updateDoc, onSnapshot, query, where } from 'firebase/firestore'
+import { collection, doc, getDoc, setDoc, updateDoc, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from './firebase.js'
-import { loginWithGoogle } from './firebase.js'
+import { loginWithGoogle, registerWithEmail, loginWithEmail } from './firebase.js'
 import { ADMIN_EMAILS } from './config.js'
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { PRODUCTS } from './data.js'
@@ -22,7 +22,7 @@ function useLS(key, init) {
 export function StoreProvider({ children }) {
   const [cart, setCart] = useLS('apkg_cart', [])      // [{id, qty}]
   const [favs, setFavs] = useLS('apkg_favs', [])      // [id]
-  const [users, setUsers] = useLS('apkg_users', [])   // [{name,email,password}]
+  const [users, setUsers] = useState([])  // [{name,email,password}]
   const [user, setUser] = useLS('apkg_user', null)
   const [orders, setOrders] = useState([])
   const [car, setCar] = useLS('apkg_car', { make: '', model: '' })
@@ -59,24 +59,55 @@ export function StoreProvider({ children }) {
   const setQty = (id, qty) => setCart((c) => qty < 1 ? c.filter((i) => i.id !== id) : c.map((i) => i.id === id ? { ...i, qty } : i))
   const toggleFav = (id) => setFavs((f) => f.includes(id) ? f.filter((x) => x !== id) : [...f, id])
 
-  const register = (name, email, password) => {
-    if (users.some((u) => u.email === email)) return 'Этот email уже зарегистрирован'
-    const u = { name, email, password }
-    setUsers([...users, u]); setUser({ name, email }); return null
+    const saveProfile = async (name, email) => {
+    try {
+      const mail = email.toLowerCase()
+      const ref = doc(db, 'users', mail)
+      const snap = await getDoc(ref)
+      if (snap.exists()) await updateDoc(ref, { lastLogin: Date.now() })
+      else await setDoc(ref, { name, email: mail, createdAt: Date.now(), lastLogin: Date.now() })
+    } catch (e) {
+      console.error('profile', e)
+    }
   }
-  const login = (email, password) => {
-    const u = users.find((x) => x.email === email && x.password === password)
-    if (!u) return 'Неверный email или пароль'
-    setUser({ name: u.name, email }); return null
+
+  const register = async (name, email, password) => {
+    try {
+      const u = await registerWithEmail(name, email, password)
+      const mail = (u.email || email).toLowerCase()
+      await saveProfile(name, mail)
+      setUser({ name, email: mail })
+      return null
+    } catch (e) {
+      console.error(e.code)
+      if (e.code === 'auth/email-already-in-use') return 'Этот email уже зарегистрирован'
+      if (e.code === 'auth/weak-password') return 'Пароль должен быть не короче 6 символов'
+      if (e.code === 'auth/invalid-email') return 'Неверный адрес почты'
+      return 'Не удалось зарегистрироваться'
+    }
   }
-  const logout = () => setUser(null)
+
+  const login = async (email, password) => {
+    try {
+      const cred = await loginWithEmail(email, password)
+      const mail = (cred.user.email || email).toLowerCase()
+      const name = cred.user.displayName || mail
+      await saveProfile(name, mail)
+      setUser({ name, email: mail })
+      return null
+    } catch (e) {
+      console.error(e.code)
+      return 'Неверный email или пароль'
+    }
+  }
+     const logout = () => setUser(null)
   const loginGoogle = async () => {
   try {
     const result = await loginWithGoogle()
     const u = result.user
     const email = u.email || u.uid
     const name = u.displayName || email
-    setUsers((list) => (list.some((x) => x.email === email) ? list : [...list, { name, email, password: null }]))
+    await saveProfile(name, email)
     setUser({ name, email })
     return null
   } catch (e) {
@@ -165,6 +196,19 @@ export function StoreProvider({ children }) {
       (err) => console.error('reviews', err)
     )
   }, [])
+
+  useEffect(() => {
+  const isAdminUser = !!user && ADMIN_EMAILS.includes((user.email || '').toLowerCase())
+  if (!isAdminUser) {
+    setUsers([])
+    return
+  }
+  return onSnapshot(
+    collection(db, 'users'),
+    (snap) => setUsers(snap.docs.map((d) => d.data()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))),
+    (err) => console.error('users', err)
+  )
+}, [user?.email])
    const isAdmin = !!user && ADMIN_EMAILS.includes((user.email || '').toLowerCase())
    const updateOrderStatus = (id, status) =>
   updateDoc(doc(db, 'orders', id), { status }).catch(() => notify('Не удалось изменить статус'))

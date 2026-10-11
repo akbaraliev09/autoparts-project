@@ -1,6 +1,6 @@
 import { getFirestore } from 'firebase/firestore'
 import { initializeApp } from 'firebase/app'
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
+import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBEoh7HOQObA2wYRUub1szQVBFIZvI6fdw',
@@ -17,3 +17,10 @@ const auth = getAuth(app)
 export const db = getFirestore(app)
 
 export const loginWithGoogle = () => signInWithPopup(auth, new GoogleAuthProvider())
+   export const registerWithEmail = async (name, email, password) => {
+     const cred = await createUserWithEmailAndPassword(auth, email, password)
+     await updateProfile(cred.user, { displayName: name })
+     return cred.user
+   }
+
+   export const loginWithEmail = (email, password) => signInWithEmailAndPassword(auth, email, password)

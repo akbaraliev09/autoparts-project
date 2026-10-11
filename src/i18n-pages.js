@@ -110,6 +110,9 @@ const ROWS = [
   ['или', 'or', 'же'],
   ['Продолжить через Google', 'Continue with Google', 'Google аркылуу улантуу'],
   ['Не удалось войти через Google', 'Could not sign in with Google', 'Google аркылуу кирүү мүмкүн болгон жок'],
+  // перевод регистер
+  ['Неверный адрес почты', 'Invalid email address', 'Почта дареги туура эмес'],
+  ['Не удалось зарегистрироваться', 'Registration failed', 'Катталуу ишке ашкан жок'],
 ]
 
 ROWS.forEach(([ru, en, kg]) => {
