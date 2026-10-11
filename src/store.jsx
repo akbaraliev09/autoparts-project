@@ -1,3 +1,5 @@
+import { collection, doc, setDoc, updateDoc, onSnapshot, query, where } from 'firebase/firestore'
+import { db } from './firebase.js'
 import { loginWithGoogle } from './firebase.js'
 import { ADMIN_EMAILS } from './config.js'
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
@@ -22,11 +24,11 @@ export function StoreProvider({ children }) {
   const [favs, setFavs] = useLS('apkg_favs', [])      // [id]
   const [users, setUsers] = useLS('apkg_users', [])   // [{name,email,password}]
   const [user, setUser] = useLS('apkg_user', null)
-  const [orders, setOrders] = useLS('apkg_orders', [])
+  const [orders, setOrders] = useState([])
   const [car, setCar] = useLS('apkg_car', { make: '', model: '' })
   const [toast, setToast] = useState('')
   const [theme, setTheme] = useLS('apkg_theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-  const [reviews, setReviews] = useLS('apkg_reviews', [])
+  const [reviews, setReviews] = useState([])
   const [reservations, setReservations] = useLS('apkg_resv', [])
   const [lang, setLang] = useLS('apkg_lang', 'ru')
   const t = (s) => (lang === 'ru' ? s : (DICT[lang]?.[s] ?? s))
@@ -84,12 +86,29 @@ export function StoreProvider({ children }) {
 }
 
   const placeOrder = (info) => {
-    const items = cart.map((i) => ({ ...products.find((p) => String(p.id) === String(i.id)), qty: i.qty }))
-    const total = items.reduce((s, i) => s + i.price * i.qty, 0)
-    const order = { id: 'KG-' + Date.now().toString().slice(-6), email: user.email, date: new Date().toLocaleString('ru-RU'), items, total, status: 'Принят', ...info }
-    setOrders([order, ...orders]); setCart([]); notify('Заказ оформлен')
-    return order
+  const items = cart
+    .map((i) => ({ ...products.find((p) => String(p.id) === String(i.id)), qty: i.qty }))
+    .filter((i) => i.name)
+    .map((i) => ({ id: String(i.id), name: i.name, brand: i.brand || '', category: i.category || '', price: i.price, qty: i.qty }))
+  const total = items.reduce((s, i) => s + i.price * i.qty, 0)
+  const order = {
+    id: 'KG-' + Date.now().toString().slice(-6),
+    email: user.email,
+    date: new Date().toLocaleString('ru-RU'),
+    createdAt: Date.now(),
+    items,
+    total,
+    status: 'Принят',
+    ...info,
   }
+  setDoc(doc(db, 'orders', order.id), JSON.parse(JSON.stringify(order)))
+    .then(() => {
+      setCart([])
+      notify('Заказ оформлен')
+    })
+    .catch(() => notify('Не удалось сохранить заказ'))
+  return order
+}
 
   // true/false — подходит илине подходит; null — авто не выбрано
   const fits = (p) => {
@@ -98,10 +117,20 @@ export function StoreProvider({ children }) {
     return p.fits.some((f) => car.model ? f === `${car.make} ${car.model}` : f.startsWith(car.make + ' '))
   }
 
-  const addReview = (productId, rating, text) => {
-    setReviews((r) => [{ id: Date.now(), productId, rating, text, author: user.name, date: new Date().toLocaleDateString('ru-RU') }, ...r])
-    notify('Отзыв добавлен')
-  }
+     const addReview = (productId, rating, text) => {
+     const id = 'R' + Date.now()
+     setDoc(doc(db, 'reviews', id), {
+       id,
+       productId: String(productId),
+       rating,
+       text,
+       author: user.name,
+       createdAt: Date.now(),
+       date: new Date().toLocaleDateString('ru-RU'),
+     })
+       .then(() => notify('Отзыв добавлен'))
+       .catch(() => notify('Не удалось сохранить отзыв'))
+   }
 
   const reserve = (productId) => {
     if (reservations.some((x) => x.email === user.email && x.productId === productId)) return notify('Эта запчасть уже забронирована')
@@ -112,8 +141,33 @@ export function StoreProvider({ children }) {
   const cancelReservation = (id) => setReservations((r) => r.filter((x) => x.id !== id))
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0)
+    // Заказы и отзывы лежат в Firestore (общая база для всех устройств)
+  useEffect(() => {
+    if (!user) {
+      setOrders([])
+      return
+    }
+    const isAdminUser = ADMIN_EMAILS.includes((user.email || '').toLowerCase())
+    const q = isAdminUser
+      ? collection(db, 'orders')
+      : query(collection(db, 'orders'), where('email', '==', user.email))
+    return onSnapshot(
+      q,
+      (snap) => setOrders(snap.docs.map((d) => d.data()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))),
+      (err) => console.error('orders', err)
+    )
+  }, [user?.email])
+
+  useEffect(() => {
+    return onSnapshot(
+      collection(db, 'reviews'),
+      (snap) => setReviews(snap.docs.map((d) => d.data()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))),
+      (err) => console.error('reviews', err)
+    )
+  }, [])
    const isAdmin = !!user && ADMIN_EMAILS.includes((user.email || '').toLowerCase())
-   const updateOrderStatus = (id, status) => setOrders((list) => list.map((o) => (o.id === id ? { ...o, status } : o)))
+   const updateOrderStatus = (id, status) =>
+  updateDoc(doc(db, 'orders', id), { status }).catch(() => notify('Не удалось изменить статус'))
   return (
     <Ctx.Provider value={{ loginGoogle, isAdmin, updateOrderStatus, users, cart, favs, user, orders, car, setCar, toast, cartCount, addToCart, setQty, toggleFav, register, login, logout, placeOrder, fits, theme, toggleTheme, reviews, addReview, reservations, reserve, cancelReservation, lang, setLang, t, products, productsLoading, refreshProducts, notify }}>
       {children}
