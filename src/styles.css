@@ -1042,3 +1042,31 @@ button.burger {
     display: inline-flex;
   }
 }
+
+/* ===== Исправление адаптива на телефоне ===== */
+body {
+  overflow-x: clip;
+}
+
+.grid > *,
+.cgrid > *,
+.pgrid > *,
+.charts > *,
+.hgrid > * {
+  min-width: 0;
+}
+
+.row {
+  flex-wrap: wrap;
+}
+
+.row .price {
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .row .btn {
+    flex: 1;
+    padding: 10px 12px;
+  }
+}
