@@ -1,3 +1,5 @@
+import { loginWithGoogle } from './firebase.js'
+import { ADMIN_EMAILS } from './config.js'
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { PRODUCTS } from './data.js'
 import { getProducts } from './api.js'
@@ -66,6 +68,20 @@ export function StoreProvider({ children }) {
     setUser({ name: u.name, email }); return null
   }
   const logout = () => setUser(null)
+  const loginGoogle = async () => {
+  try {
+    const result = await loginWithGoogle()
+    const u = result.user
+    const email = u.email || u.uid
+    const name = u.displayName || email
+    setUsers((list) => (list.some((x) => x.email === email) ? list : [...list, { name, email, password: null }]))
+    setUser({ name, email })
+    return null
+  } catch (e) {
+    console.error(e.code, e.message)
+    return 'Не удалось войти через Google'
+  }
+}
 
   const placeOrder = (info) => {
     const items = cart.map((i) => ({ ...products.find((p) => String(p.id) === String(i.id)), qty: i.qty }))
@@ -96,8 +112,10 @@ export function StoreProvider({ children }) {
   const cancelReservation = (id) => setReservations((r) => r.filter((x) => x.id !== id))
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0)
+   const isAdmin = !!user && ADMIN_EMAILS.includes((user.email || '').toLowerCase())
+   const updateOrderStatus = (id, status) => setOrders((list) => list.map((o) => (o.id === id ? { ...o, status } : o)))
   return (
-    <Ctx.Provider value={{ cart, favs, user, orders, car, setCar, toast, cartCount, addToCart, setQty, toggleFav, register, login, logout, placeOrder, fits, theme, toggleTheme, reviews, addReview, reservations, reserve, cancelReservation, lang, setLang, t, products, productsLoading, refreshProducts, notify }}>
+    <Ctx.Provider value={{ loginGoogle, isAdmin, updateOrderStatus, users, cart, favs, user, orders, car, setCar, toast, cartCount, addToCart, setQty, toggleFav, register, login, logout, placeOrder, fits, theme, toggleTheme, reviews, addReview, reservations, reserve, cancelReservation, lang, setLang, t, products, productsLoading, refreshProducts, notify }}>
       {children}
       <div className={'toast' + (toast ? ' show' : '')} role="status">{t(toast)}</div>
     </Ctx.Provider>

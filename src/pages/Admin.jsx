@@ -1,3 +1,7 @@
+import ImageUpload from '../components/ImageUpload.jsx'
+import AdminOrders from '../components/AdminOrders.jsx'
+import AdminUsers from '../components/AdminUsers.jsx'
+import AdminStats from '../components/AdminStats.jsx'
 import { useState } from 'react'
 import { useStore } from '../store.jsx'
 import { API_URL, createProduct, updateProduct, deleteProduct, seedProducts } from '../api.js'
@@ -53,6 +57,12 @@ export default function Admin() {
   return (
     <div className="wrap page">
       <h1 className="h1s">Админ-панель</h1>
+      <h2 className="h2s">Статистика</h2>
+   <AdminStats />
+    <h2 className="h2s">Заказы</h2>
+   <AdminOrders />
+   <h2 className="h2s">Пользователи</h2>
+   <AdminUsers />
       {!API_URL && <p className="bad">Адрес API не указан: откройте src/api.js и вставьте ссылку на MockAPI в API_URL. Пока сайт работает на локальных данных, изменения не сохраняются.</p>}
 
       <form className="box" onSubmit={submit}>
@@ -69,6 +79,9 @@ export default function Admin() {
           <label>Цена, сом<input required type="number" min="0" value={form.price} onChange={set('price')} /></label>
           <label>В наличии, шт.<input required type="number" min="0" value={form.stock} onChange={set('stock')} /></label>
           <label className="wide">Фото (путь или ссылка)<input placeholder="/images/products/brake-pads.jpg" value={form.image} onChange={set('image')} /></label>
+          <div className="wide">
+          <ImageUpload value={form.image} onChange={(url) => setForm({ ...form, image: url })} />
+         </div>
           <label className="wide">Описание<input value={form.description} onChange={set('description')} /></label>
           <label className="wide">Характеристики (каждая с новой строки, в виде Название: значение)
             <textarea rows="5" placeholder={'Тип: Синтетика\nОбъём: 4 л\nГарантия: 12 месяцев'} value={form.specsText} onChange={set('specsText')} />

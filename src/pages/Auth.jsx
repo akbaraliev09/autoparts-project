@@ -3,12 +3,16 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store.jsx'
 
 export default function Auth() {
-  const { login, register, t } = useStore()
+  const { login, register, t, loginGoogle } = useStore()
   const nav = useNavigate()
   const [mode, setMode] = useState('login')
   const [f, setF] = useState({ name: '', email: '', password: '' })
   const [err, setErr] = useState('')
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
+  const google = async () => {
+  const r = await loginGoogle()
+  r ? setErr(r) : nav('/account')
+}
   const submit = (e) => {
     e.preventDefault()
     if (f.password.length < 6) return setErr('Пароль должен быть не короче 6 символов')
@@ -27,6 +31,8 @@ export default function Auth() {
         <label>{t('Пароль')}<input required type="password" value={f.password} onChange={set('password')} /></label>
         {err && <p className="bad">{t(err)}</p>}
         <button className="btn full">{mode === 'login' ? t('Войти') : t('Создать аккаунт')}</button>
+        <p className="or">{t('или')}</p>
+        <button type="button" className="btn ghost full" onClick={google}>{t('Продолжить через Google')}</button>
       </form>
     </div>
   )

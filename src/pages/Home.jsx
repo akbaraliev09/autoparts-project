@@ -2,12 +2,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { CATEGORIES, CARS } from '../data.js'
 import CategoryCard from '../components/CategoryCard.jsx'
+import Skeleton from '../components/Skeleton.jsx'
 import { useStore } from '../store.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 
 export default function Home() {
   const nav = useNavigate()
-  const { car, setCar, t, products } = useStore()
+  const { car, setCar, t, products, productsLoading } = useStore()
   const [q, setQ] = useState('')
   const [year, setYear] = useState('')
   const [engine, setEngine] = useState('')
@@ -58,7 +59,7 @@ export default function Home() {
 
       <section><div className="wrap">
         <h2>{t('Популярные запчасти')}</h2>
-        <div className="grid">{products.slice(0, 4).map((p) => <ProductCard key={p.id} p={p} />)}</div>
+        {productsLoading ? <Skeleton count={4} /> : <div className="grid">{products.slice(0, 4).map((p) => <ProductCard key={p.id} p={p} />)}</div>}
       </div></section>
     </>
   )

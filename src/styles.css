@@ -946,3 +946,99 @@ header.scrolled {
   outline: 2px solid var(--red);
   outline-offset: 2px;
 }
+
+/* ===== Статистика продажи в админ понели ===== */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 980px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Окно демо-оплаты ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.pay {
+  width: 100%;
+  max-width: 420px;
+  margin: 0;
+}
+
+.or {
+  text-align: center;
+  color: var(--mute);
+  font-size: 13px;
+  margin: 14px 0 0;
+}
+
+/* ===== Загрузка фото ===== */
+.upload {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.upload-preview {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+
+.box label.upload-btn {
+  display: inline-block;
+  margin: 0;
+  font-size: 15px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* ===== Бургер-меню: только на узких экранах (исправление) ===== */
+button.burger {
+  display: none;
+}
+
+@media (max-width: 1180px) {
+  button.burger {
+    display: inline-flex;
+  }
+}

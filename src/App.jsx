@@ -16,6 +16,19 @@ function Protected({ children }) {
   const { user } = useStore()
   return user ? children : <Navigate to="/auth" replace />
 }
+   function AdminOnly({ children }) {
+     const { user, isAdmin } = useStore()
+     if (!user) return <Navigate to="/auth" replace />
+     if (!isAdmin) {
+       return (
+         <div className="wrap page">
+           <h1 className="h1s">Доступ запрещён</h1>
+           <p className="muted">Эта страница доступна только администратору.</p>
+         </div>
+       )
+     }
+     return children
+   }
 
 export default function App() {
   const { pathname } = useLocation()
@@ -31,7 +44,7 @@ export default function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/account" element={<Protected><Account /></Protected>} />
-          <Route path="/admin" element={<Protected><Admin /></Protected>} />
+          <Route path="/admin" element={<AdminOnly><Admin /></AdminOnly>} />
           <Route path="/about" element={<Info kind="about" />} />
           <Route path="/contacts" element={<Info kind="contacts" />} />
           <Route path="*" element={<Navigate to="/" replace />} />
