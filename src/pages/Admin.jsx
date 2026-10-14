@@ -1,3 +1,4 @@
+import AdminRequests from '../components/AdminRequests.jsx'
 import ImageUpload from '../components/ImageUpload.jsx'
 import AdminOrders from '../components/AdminOrders.jsx'
 import AdminUsers from '../components/AdminUsers.jsx'
@@ -61,6 +62,8 @@ export default function Admin() {
    <AdminStats />
     <h2 className="h2s">Заказы</h2>
    <AdminOrders />
+   <h2 className="h2s">Заявки на запчасти</h2>
+   <AdminRequests />
    <h2 className="h2s">Пользователи</h2>
    <AdminUsers />
       {!API_URL && <p className="bad">Адрес API не указан: откройте src/api.js и вставьте ссылку на MockAPI в API_URL. Пока сайт работает на локальных данных, изменения не сохраняются.</p>}

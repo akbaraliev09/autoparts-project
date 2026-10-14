@@ -1,4 +1,4 @@
-import { sendOrderEmail } from './email.js'
+import { sendOrderEmail, sendRequestEmail } from './email.js'
 import { collection, doc, getDoc, setDoc, updateDoc, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from './firebase.js'
 import { loginWithGoogle, registerWithEmail, loginWithEmail } from './firebase.js'
@@ -30,6 +30,7 @@ export function StoreProvider({ children }) {
   const [toast, setToast] = useState('')
   const [theme, setTheme] = useLS('apkg_theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   const [reviews, setReviews] = useState([])
+  const [requests, setRequests] = useState([])
   const [reservations, setReservations] = useLS('apkg_resv', [])
   const [lang, setLang] = useLS('apkg_lang', 'ru')
   const t = (s) => (lang === 'ru' ? s : (DICT[lang]?.[s] ?? s))
@@ -211,11 +212,38 @@ export function StoreProvider({ children }) {
     (err) => console.error('users', err)
   )
 }, [user?.email])
+  useEffect(() => {
+    const isAdminUser = !!user && ADMIN_EMAILS.includes((user.email || '').toLowerCase())
+    if (!isAdminUser) {
+      setRequests([])
+      return
+    }
+    return onSnapshot(
+      collection(db, 'requests'),
+      (snap) => setRequests(snap.docs.map((d) => d.data()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))),
+      (err) => console.error('requests', err)
+    )
+  }, [user?.email])
    const isAdmin = !!user && ADMIN_EMAILS.includes((user.email || '').toLowerCase())
    const updateOrderStatus = (id, status) =>
   updateDoc(doc(db, 'orders', id), { status }).catch(() => notify('Не удалось изменить статус'))
+     const submitRequest = async (data) => {
+    const id = 'ZP-' + Date.now().toString().slice(-6)
+    const req = { id, ...data, status: 'Новая', createdAt: Date.now(), date: new Date().toLocaleString('ru-RU') }
+    try {
+      await setDoc(doc(db, 'requests', id), req)
+    } catch (e) {
+      console.error('request', e)
+      return null
+    }
+    sendRequestEmail(req).catch((e) => console.error('email', e))
+    return req
+  }
+
+  const updateRequestStatus = (id, status) =>
+    updateDoc(doc(db, 'requests', id), { status }).catch(() => notify('Не удалось изменить статус'))
   return (
-    <Ctx.Provider value={{ loginGoogle, isAdmin, updateOrderStatus, users, cart, favs, user, orders, car, setCar, toast, cartCount, addToCart, setQty, toggleFav, register, login, logout, placeOrder, fits, theme, toggleTheme, reviews, addReview, reservations, reserve, cancelReservation, lang, setLang, t, products, productsLoading, refreshProducts, notify }}>
+    <Ctx.Provider value={{ requests, submitRequest, updateRequestStatus, loginGoogle, isAdmin, updateOrderStatus, users, cart, favs, user, orders, car, setCar, toast, cartCount, addToCart, setQty, toggleFav, register, login, logout, placeOrder, fits, theme, toggleTheme, reviews, addReview, reservations, reserve, cancelReservation, lang, setLang, t, products, productsLoading, refreshProducts, notify }}>
       {children}
       <div className={'toast' + (toast ? ' show' : '')} role="status">{t(toast)}</div>
     </Ctx.Provider>

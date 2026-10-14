@@ -25,7 +25,7 @@ export default function ImageUpload({ value, onChange }) {
     <div className="upload">
       {value && <img className="upload-preview" src={value} alt="" />}
       <label className="btn ghost upload-btn">
-        {busy ? 'Загрузка...' : 'Выбрать фото с компьютера'}
+        {busy ? 'Загрузка...' : 'Выбрать фото с устройства'}
         <input type="file" accept="image/*" hidden onChange={pick} disabled={busy} />
       </label>
       {error && <p className="bad">{error}</p>}
