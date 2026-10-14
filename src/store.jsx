@@ -1,3 +1,4 @@
+import { sendOrderEmail } from './email.js'
 import { collection, doc, getDoc, setDoc, updateDoc, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from './firebase.js'
 import { loginWithGoogle, registerWithEmail, loginWithEmail } from './firebase.js'
@@ -136,6 +137,7 @@ export function StoreProvider({ children }) {
     .then(() => {
       setCart([])
       notify('Заказ оформлен')
+      sendOrderEmail(order).catch((e) => console.error('email', e))
     })
     .catch(() => notify('Не удалось сохранить заказ'))
   return order
