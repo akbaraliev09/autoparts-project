@@ -10,9 +10,9 @@ const COLORS = ['#d92b2b', '#17181b', '#6b7078', '#e8686b', '#9a9fa8', '#b81f1f'
 const tick = { fill: '#9a9fa8', fontSize: 12 }
 
 export default function AdminStats() {
-  const { orders } = useStore()
+  const { orders, requests } = useStore()
 
-  if (orders.length === 0) {
+  if (orders.length === 0 && requests.length === 0) {
     return <p className="muted">Пока нет заказов. Оформите несколько тестовых заказов, и здесь появятся графики.</p>
   }
 
@@ -43,6 +43,14 @@ export default function AdminStats() {
     .sort((a, b) => b.qty - a.qty)
     .slice(0, 5)
   const cats = Object.entries(byCategory).map(([name, value]) => ({ name, value }))
+    // Заявки на запчасти по дням 
+  const reqByDay = {}
+  requests.forEach((r) => {
+    const day = (r.date || '').split(',')[0]
+    reqByDay[day] = reqByDay[day] || { day, requests: 0 }
+    reqByDay[day].requests += 1
+  })
+  const reqDays = Object.values(reqByDay).reverse()
 
   return (
     <div>
@@ -50,7 +58,8 @@ export default function AdminStats() {
         <StatCard title="Заказов" value={orders.length} />
         <StatCard title="Продажи" value={money(revenue)} />
         <StatCard title="Товаров продано" value={itemsCount} />
-        <StatCard title="Средний чек" value={money(Math.round(revenue / orders.length))} />
+        <StatCard title="Средний чек" value={money(orders.length ? Math.round(revenue / orders.length) : 0)} />
+        <StatCard title="Заявок на запчасти" value={requests.length} />
       </div>
 
       <div className="charts">
@@ -103,6 +112,18 @@ export default function AdminStats() {
               <Tooltip formatter={(v) => money(v)} />
               <Legend />
             </PieChart>
+          </ResponsiveContainer>
+        </div>
+                <div className="box">
+          <h3 className="h2s">Заявки на запчасти по дням</h3>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={reqDays}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#8884" />
+              <XAxis dataKey="day" tick={tick} />
+              <YAxis allowDecimals={false} tick={tick} />
+              <Tooltip />
+              <Bar dataKey="requests" name="Заявки" fill="#6b7078" radius={[6, 6, 0, 0]} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </div>

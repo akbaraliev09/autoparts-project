@@ -1070,3 +1070,7 @@ body {
     padding: 10px 12px;
   }
 }
+
+.stats {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
