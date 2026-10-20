@@ -286,8 +286,12 @@ h1 {
 
 .vgrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr) auto;
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
+}
+
+.vgrid .btn {
+  grid-column: 1 / -1;
 }
 
 .vgrid select {
@@ -296,7 +300,7 @@ h1 {
   border: 1px solid #3a3d44;
   background: #17181b;
   color: #fff;
-  padding: 0 8px;
+  padding: 0 6px;
   min-width: 0;
 }
 
@@ -483,12 +487,47 @@ label select {
   display: flex;
   gap: 8px;
   align-items: center;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .chk input {
-  width: auto;
-  height: auto;
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-content: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  cursor: pointer;
+}
+
+.chk input::after {
+  content: '';
+  width: 11px;
+  height: 21px;
+  border: solid #fff;
+  border-width: 0 4px 4px 0;
+  transform: translateY(-3px) rotate(45deg);
+  opacity: 0;
+}
+
+.chk input:checked {
+  background: #d92b2b;
+  border-color: #d92b2b;
+}
+
+.chk input:checked::after {
+  opacity: 1;
+}
+
+.chk input:focus-visible {
+  outline: 2px solid #d92b2b;
+  outline-offset: 2px;
 }
 
 /* ===== Страница товара ===== */
@@ -710,9 +749,8 @@ footer {
   }
 
   .vgrid .btn {
-    grid-column: 1 / -1;
-  }
-
+  grid-column: 1 / -1;
+}
   .crow {
     grid-template-columns: 1fr;
   }
@@ -1073,4 +1111,60 @@ body {
 
 .stats {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+/* ===== Поиск в шапке и в каталоге ===== */
+.hsearch {
+  display: flex;
+  gap: 8px;
+  padding-top: 10px;
+  padding-bottom: 12px;
+}
+
+.hsearch input,
+.catsearch {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  padding: 0 14px;
+  font-size: 16px;
+}
+
+.hsearch input:focus,
+.catsearch:focus {
+  outline: 2px solid #d92b2b;
+  outline-offset: 0;
+}
+
+.catsearch {
+  flex: 1 1 260px;
+}
+
+/* ===== Админка: выбор периода статистики ===== */
+.periods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.periods button {
+  height: 38px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.periods button.on {
+  background: #d92b2b;
+  border-color: #d92b2b;
+  color: #fff;
 }

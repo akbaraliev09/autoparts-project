@@ -32,11 +32,25 @@ export default function Catalog() {
   const shown = list.slice((cur - 1) * PAGE_SIZE, cur * PAGE_SIZE)
 
   const setCat = (v) => { const n = new URLSearchParams(sp); v ? n.set('cat', v) : n.delete('cat'); setSp(n) }
+    const setQuery = (v) => {
+    const n = new URLSearchParams(sp)
+    v ? n.set('q', v) : n.delete('q')
+    setSp(n)
+    setPage(1)
+  }
 
   return (
     <div className="wrap page">
       <h1 className="h1s">{onlyFavs ? t('Избранное') : q ? `Результаты: «${sp.get('q')}»` : t('Каталог')}</h1>
       <div className="filters">
+                <input
+          className="catsearch"
+          type="search"
+          value={sp.get('q') || ''}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t('Введите название детали или артикул')}
+          aria-label="Поиск"
+        />
         <select value={cat} onChange={(e) => setCat(e.target.value)} aria-label="Категория">
           <option value="">{t('Все категории')}</option>{CATEGORIES.map((c) => <option key={c.name} value={c.name}>{t(c.name)}</option>)}
         </select>

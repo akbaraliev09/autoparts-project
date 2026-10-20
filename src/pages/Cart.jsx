@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { money } from '../data.js'
 import { useStore } from '../store.jsx'
 import PaymentForm from '../components/PaymentForm.jsx'
+import { formatPhone, phoneOk } from '../phone.js'
 
 const ONLINE = 'Онлайн картой (демо)'
 
@@ -10,21 +11,30 @@ export default function Cart() {
   const { cart, setQty, user, placeOrder, t, products } = useStore()
   const nav = useNavigate()
   const [paying, setPaying] = useState(false)
+    const [phoneError, setPhoneError] = useState('')
   const [f, setF] = useState({ name: user?.name || '', phone: '', city: 'Бишкек', address: '', delivery: 'Курьер', pay: 'Наличными при получении' })
   const items = cart
     .map((i) => ({ ...products.find((p) => String(p.id) === String(i.id)), id: i.id, qty: i.qty }))
     .filter((i) => i.name)
   const total = items.reduce((s, i) => s + i.price * i.qty, 0)
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
+    const setPhone = (e) => {
+    setPhoneError('')
+    setF({ ...f, phone: formatPhone(e.target.value) })
+  }
 
   if (!items.length) return <div className="wrap page"><h1 className="h1s">{t('Корзина')}</h1><div className="empty">{t('Корзина пуста.')} <Link to="/catalog">{t('Перейти в каталог')}</Link></div></div>
 
-    const submit = (e) => {
-     e.preventDefault()
-     if (f.pay === ONLINE) return setPaying(true)
-     placeOrder(f)
-     nav('/account')
-   }
+      const submit = (e) => {
+    e.preventDefault()
+    if (!phoneOk(f.phone)) {
+      setPhoneError('Введите номер в формате +996 XXX XX XX XX')
+      return
+    }
+    if (f.pay === ONLINE) return setPaying(true)
+    placeOrder(f)
+    nav('/account')
+  }
   return (
     <div className="wrap page">
       <h1 className="h1s">{t('Корзина')}</h1>
@@ -46,7 +56,8 @@ export default function Cart() {
           <h2 className="h2s">{t('Оформление заказа')}</h2>
           {!user && <p className="muted">{t('Чтобы оформить заказ и видеть его в личном кабинете,')} <Link to="/auth">{t('войдите')}</Link> {t('или зарегистрируйтесь.')}</p>}
           <label>{t('Имя')}<input required value={f.name} onChange={set('name')} /></label>
-          <label>{t('Телефон')}<input required type="tel" placeholder="+996" value={f.phone} onChange={set('phone')} /></label>
+          <label>{t('Телефон')}<input required type="tel" inputMode="tel" placeholder="+996 700 00 00 00" value={f.phone} onChange={setPhone} /></label>
+          {phoneError && <p className="bad">{t(phoneError)}</p>}
           <label>{t('Город')}<input required value={f.city} onChange={set('city')} /></label>
           <label>{t('Адрес')}<input required value={f.address} onChange={set('address')} /></label>
           <label>{t('Доставка')}<select value={f.delivery} onChange={set('delivery')}><option value="Курьер">{t('Курьер')}</option><option value="Самовывоз">{t('Самовывоз')}</option></select></label>

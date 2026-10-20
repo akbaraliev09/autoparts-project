@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../store.jsx'
 import { ABOUT } from '../aboutText.js'
+import { formatPhone, phoneOk } from '../phone.js'
 
 export default function Info({ kind }) {
   const { user, t, lang, submitRequest } = useStore()
@@ -9,15 +10,28 @@ export default function Info({ kind }) {
   const [error, setError] = useState('')
   const [f, setF] = useState({ name: user?.name || '', phone: '', car: '', part: '' })
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
+  const setPhone = (e) => {
+    setError('')
+    setF({ ...f, phone: formatPhone(e.target.value) })
+  }
 
   const submit = async (e) => {
     e.preventDefault()
+    if (!phoneOk(f.phone)) {
+      setError('Введите номер в формате +996 XXX XX XX XX')
+      return
+    }
     setBusy(true)
     setError('')
     const r = await submitRequest({ ...f, email: user?.email || '' })
     setBusy(false)
-    if (r) setSent(true)
-    else setError('Не удалось отправить заявку')
+    if (r) {
+      setSent(true)
+      setF({ name: '', phone: '', car: '', part: '' })
+      setTimeout(() => setSent(false), 5000)
+    } else {
+      setError('Не удалось отправить заявку')
+    }
   }
 
   if (kind === 'about') return (
@@ -35,13 +49,12 @@ export default function Info({ kind }) {
         <h2 className="h2s">{t('Заказать запчасть')}</h2>
         <p className="muted">{t('Не нашли нужную деталь? Опишите её, мы найдём и свяжемся с вами.')}</p>
         <label>{t('Имя')}<input required value={f.name} onChange={set('name')} /></label>
-        <label>{t('Телефон')}<input required type="tel" placeholder="+996" value={f.phone} onChange={set('phone')} /></label>
+        <label>{t('Телефон')}<input required type="tel" inputMode="tel" placeholder="+996 700 00 00 00" value={f.phone} onChange={setPhone} /></label>
         <label>{t('Автомобиль')}<input required placeholder={t('Марка, модель, год, двигатель')} value={f.car} onChange={set('car')} /></label>
         <label>{t('Какая деталь нужна')}<input required placeholder={t('Название или артикул')} value={f.part} onChange={set('part')} /></label>
         {error && <p className="bad">{t(error)}</p>}
-        {sent
-          ? <p className="ok">{t('Заявка отправлена. Мы свяжемся с вами в ближайшее время.')}</p>
-          : <button className="btn full" disabled={busy}>{t('Отправить заявку')}</button>}
+        {sent && <p className="ok">{t('Заявка отправлена. Мы свяжемся с вами в ближайшее время.')}</p>}
+        <button className="btn full" disabled={busy}>{t('Отправить заявку')}</button>
       </form>
     </div>
   )
