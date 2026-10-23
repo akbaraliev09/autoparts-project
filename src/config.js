@@ -1,2 +1,2 @@
 // Почты администраторов.
-export const ADMIN_EMAILS = ['akbaralievamantur41@gmail.com',]
+export const ADMIN_EMAILS = ['akbaralievamantur41@gmail.com', 'yakudzodancho@gmail.com']
