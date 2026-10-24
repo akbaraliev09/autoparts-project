@@ -3,10 +3,9 @@ import { useStore } from '../store.jsx'
 import { money } from '../data.js'
 
 export default function Account() {
-  const { user, orders, logout, isAdmin, reservations, cancelReservation, t, products } = useStore()
+  const { user, orders, logout, isAdmin, t } = useStore()
   const nav = useNavigate()
   const mine = orders.filter((o) => o.email === user.email)
-  const myRes = reservations.filter((r) => r.email === user.email)
   return (
     <div className="wrap page">
       <div className="accHead">
@@ -16,16 +15,6 @@ export default function Account() {
           <button className="btn ghost" onClick={() => { logout(); nav('/') }}>{t('Выйти')}</button>
         </div>
       </div>
-      <h2 className="h2s">{t('Мои брони')}</h2>
-      {myRes.length ? myRes.map((r) => {
-        const p = products.find((x) => String(x.id) === String(r.productId))
-        return (
-          <div className="box oh" key={r.id}>
-            <div><b>{p ? p.name : r.productId}</b><div className="muted">{r.id} · {r.date}</div></div>
-            <button className="btn ghost" onClick={() => cancelReservation(r.id)}>{t('Отменить')}</button>
-          </div>
-        )
-      }) : <div className="muted">{t('Броней пока нет.')}</div>}
       <h2 className="h2s">{t('История заказов')}</h2>
       {mine.length ? mine.map((o) => (
         <div className="box order" key={o.id}>

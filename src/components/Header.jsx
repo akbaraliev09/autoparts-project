@@ -19,6 +19,22 @@ export default function Header() {
     nav('/catalog?q=' + encodeURIComponent(text.trim()))
     setSearchOpen(false)
   }
+
+  const handleContactsClick = (e) => {
+    e.preventDefault()
+    const footer = document.getElementById('site-footer')
+
+    if (window.location.pathname === '/') {
+      footer?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+
+    nav('/')
+    setTimeout(() => {
+      document.getElementById('site-footer')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 80)
+  }
+
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -40,7 +56,7 @@ export default function Header() {
           <NavLink to="/catalog">{t('Каталог')}</NavLink>
           <NavLink to="/categories">{t('Категории')}</NavLink>
           <NavLink to="/about">{t('О нас')}</NavLink>
-          <NavLink to="/contacts">{t('Контакты')}</NavLink>
+          <a href="#site-footer" onClick={handleContactsClick}>{t('Контакты')}</a>
         </nav>
         <div className="icons">
           <button className="ib" onClick={() => setSearchOpen(!searchOpen)} aria-label="Поиск" aria-expanded={searchOpen}>
@@ -75,7 +91,7 @@ export default function Header() {
           <Link to="/catalog">{t('Каталог')}</Link>
           <Link to="/categories">{t('Категории')}</Link>
           <Link to="/about">{t('О нас')}</Link>
-          <Link to="/contacts">{t('Контакты')}</Link>
+          <a href="#site-footer" onClick={handleContactsClick}>{t('Контакты')}</a>
           <Link to="/contacts#request">{t('Заказать запчасть')}</Link>
         </div>
       )}

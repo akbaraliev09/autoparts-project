@@ -1,8 +1,9 @@
+import { useAdminEmails } from './admins.js'
 import { sendOrderEmail, sendRequestEmail } from './email.js'
+import { sendOrderTelegram, sendRequestTelegram } from "./telegram.js";
 import { collection, doc, getDoc, setDoc, updateDoc, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from './firebase.js'
 import { loginWithGoogle, registerWithEmail, loginWithEmail } from './firebase.js'
-import { ADMIN_EMAILS } from './config.js'
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { PRODUCTS } from './data.js'
 import { getProducts } from './api.js'
@@ -21,6 +22,7 @@ function useLS(key, init) {
 }
 
 export function StoreProvider({ children }) {
+  const adminEmails = useAdminEmails()
   const [cart, setCart] = useLS('apkg_cart', [])      // [{id, qty}]
   const [favs, setFavs] = useLS('apkg_favs', [])      // [id]
   const [users, setUsers] = useState([])  // [{name,email,password}]
@@ -31,7 +33,6 @@ export function StoreProvider({ children }) {
   const [theme, setTheme] = useLS('apkg_theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   const [reviews, setReviews] = useState([])
   const [requests, setRequests] = useState([])
-  const [reservations, setReservations] = useLS('apkg_resv', [])
   const [lang, setLang] = useLS('apkg_lang', 'ru')
   const t = (s) => (lang === 'ru' ? s : (DICT[lang]?.[s] ?? s))
 
@@ -135,10 +136,11 @@ export function StoreProvider({ children }) {
     ...info,
   }
   setDoc(doc(db, 'orders', order.id), JSON.parse(JSON.stringify(order)))
-    .then(() => {
+      .then(() => {
       setCart([])
       notify('Заказ оформлен')
       sendOrderEmail(order).catch((e) => console.error('email', e))
+      sendOrderTelegram(order)
     })
     .catch(() => notify('Не удалось сохранить заказ'))
   return order
@@ -166,14 +168,6 @@ export function StoreProvider({ children }) {
        .catch(() => notify('Не удалось сохранить отзыв'))
    }
 
-  const reserve = (productId) => {
-    if (reservations.some((x) => x.email === user.email && x.productId === productId)) return notify('Эта запчасть уже забронирована')
-    setReservations((r) => [{ id: 'BR-' + Date.now().toString().slice(-6), email: user.email, productId, date: new Date().toLocaleString('ru-RU') }, ...r])
-    notify('Запчасть забронирована')
-  }
-
-  const cancelReservation = (id) => setReservations((r) => r.filter((x) => x.id !== id))
-
   const cartCount = cart.reduce((s, i) => s + i.qty, 0)
     // Заказы и отзывы лежат в Firestore (общая база для всех устройств)
   useEffect(() => {
@@ -181,7 +175,7 @@ export function StoreProvider({ children }) {
       setOrders([])
       return
     }
-    const isAdminUser = ADMIN_EMAILS.includes((user.email || '').toLowerCase())
+    const isAdminUser = adminEmails.includes((user.email || '').toLowerCase())
     const q = isAdminUser
       ? collection(db, 'orders')
       : query(collection(db, 'orders'), where('email', '==', user.email))
@@ -190,7 +184,7 @@ export function StoreProvider({ children }) {
       (snap) => setOrders(snap.docs.map((d) => d.data()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))),
       (err) => console.error('orders', err)
     )
-  }, [user?.email])
+  }, [user?.email, adminEmails])
 
   useEffect(() => {
     return onSnapshot(
@@ -201,7 +195,7 @@ export function StoreProvider({ children }) {
   }, [])
 
   useEffect(() => {
-  const isAdminUser = !!user && ADMIN_EMAILS.includes((user.email || '').toLowerCase())
+  const isAdminUser = !!user && adminEmails.includes((user.email || '').toLowerCase())
   if (!isAdminUser) {
     setUsers([])
     return
@@ -211,9 +205,9 @@ export function StoreProvider({ children }) {
     (snap) => setUsers(snap.docs.map((d) => d.data()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))),
     (err) => console.error('users', err)
   )
-}, [user?.email])
+}, [user?.email, adminEmails])
   useEffect(() => {
-    const isAdminUser = !!user && ADMIN_EMAILS.includes((user.email || '').toLowerCase())
+    const isAdminUser = !!user && adminEmails.includes((user.email || '').toLowerCase())
     if (!isAdminUser) {
       setRequests([])
       return
@@ -223,8 +217,8 @@ export function StoreProvider({ children }) {
       (snap) => setRequests(snap.docs.map((d) => d.data()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))),
       (err) => console.error('requests', err)
     )
-  }, [user?.email])
-   const isAdmin = !!user && ADMIN_EMAILS.includes((user.email || '').toLowerCase())
+  }, [user?.email, adminEmails])
+   const isAdmin = !!user && adminEmails.includes((user.email || '').toLowerCase())
    const updateOrderStatus = (id, status) =>
   updateDoc(doc(db, 'orders', id), { status }).catch(() => notify('Не удалось изменить статус'))
      const submitRequest = async (data) => {
@@ -237,13 +231,14 @@ export function StoreProvider({ children }) {
       return null
     }
     sendRequestEmail(req).catch((e) => console.error('email', e))
+    sendRequestTelegram(req)
     return req
   }
 
   const updateRequestStatus = (id, status) =>
     updateDoc(doc(db, 'requests', id), { status }).catch(() => notify('Не удалось изменить статус'))
   return (
-    <Ctx.Provider value={{ requests, submitRequest, updateRequestStatus, loginGoogle, isAdmin, updateOrderStatus, users, cart, favs, user, orders, car, setCar, toast, cartCount, addToCart, setQty, toggleFav, register, login, logout, placeOrder, fits, theme, toggleTheme, reviews, addReview, reservations, reserve, cancelReservation, lang, setLang, t, products, productsLoading, refreshProducts, notify }}>
+    <Ctx.Provider value={{ requests, submitRequest, updateRequestStatus, loginGoogle, isAdmin, updateOrderStatus, users, cart, favs, user, orders, car, setCar, toast, cartCount, addToCart, setQty, toggleFav, register, login, logout, placeOrder, fits, theme, toggleTheme, reviews, addReview, lang, setLang, t, products, productsLoading, refreshProducts, notify }}>
       {children}
       <div className={'toast' + (toast ? ' show' : '')} role="status">{t(toast)}</div>
     </Ctx.Provider>

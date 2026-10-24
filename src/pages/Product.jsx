@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { CATEGORIES, money } from '../data.js'
 import ProductImage from '../components/ProductImage.jsx'
 import Skeleton from '../components/Skeleton.jsx'
@@ -8,8 +8,7 @@ import Reviews from '../components/Reviews.jsx'
 
 export default function Product() {
   const { id } = useParams()
-  const nav = useNavigate()
-  const { addToCart, toggleFav, favs, user, reserve, t, products, productsLoading } = useStore()
+  const { addToCart, toggleFav, favs, t, products, productsLoading } = useStore()
   const p = products.find((x) => String(x.id) === id)
   if (!p && productsLoading) return <div className="wrap page"><Skeleton count={1} /></div>
   if (!p) return <div className="wrap page"><p>{t('Товар не найден.')} <Link to="/catalog">{t('Вернуться в каталог')}</Link></p></div>
@@ -29,7 +28,6 @@ export default function Product() {
           <div className="row2">
             <button className="btn" onClick={() => addToCart(p.id)}>{t('В корзину')}</button>
             <button className="btn ghost" onClick={() => toggleFav(p.id)}>{favs.includes(p.id) ? '♥ ' + t('В избранном') : '♡ ' + t('В избранное')}</button>
-            <button className="btn ghost" onClick={() => (user ? reserve(p.id) : nav('/auth'))}>{t('Забронировать')}</button>
           </div>
           <h2 className="h2s">{t('Характеристики')}</h2>
           <table className="specs"><tbody>
