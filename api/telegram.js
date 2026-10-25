@@ -1,9 +1,5 @@
 // Серверная функция Vercel: принимает заказ или заявку с сайта и отправляет сообщение в Telegram.
-// Нужны две переменные окружения (Vercel → Settings → Environment Variables):
-//   TELEGRAM_BOT_TOKEN — токен от @BotFather
-//   TELEGRAM_CHAT_ID   — номер чата, куда слать уведомления
 
-// Убираем всё лишнее: ограничиваем длину и экранируем символы HTML
 const clean = (value, max = 200) =>
   String(value ?? '')
     .slice(0, max)

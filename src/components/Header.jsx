@@ -10,15 +10,7 @@ import { HeartIcon, CartIcon, UserIcon } from './Icons.jsx'
 export default function Header() {
   const { cartCount, favs, user, t } = useStore()
   const [open, setOpen] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [text, setText] = useState('')
   const nav = useNavigate()
-
-  const submitSearch = (e) => {
-    e.preventDefault()
-    nav('/catalog?q=' + encodeURIComponent(text.trim()))
-    setSearchOpen(false)
-  }
 
   const handleContactsClick = (e) => {
     e.preventDefault()
@@ -59,9 +51,6 @@ export default function Header() {
           <a href="#site-footer" onClick={handleContactsClick}>{t('Контакты')}</a>
         </nav>
         <div className="icons">
-          <button className="ib" onClick={() => setSearchOpen(!searchOpen)} aria-label="Поиск" aria-expanded={searchOpen}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
-          </button>
           <Link className="ib" to="/catalog?favs=1" aria-label="Избранное"><HeartIcon />{favs.length > 0 && <span className="badge">{favs.length}</span>}</Link>
           <Link className="ib" to="/cart" aria-label="Корзина"><CartIcon />{cartCount > 0 && <span className="badge">{cartCount}</span>}</Link>
          <Link className="ib" to={user ? '/account' : '/auth'} aria-label="Профиль"><UserIcon /> <span className="uname">{user ? user.name : t('Войти')}</span></Link>
@@ -73,18 +62,6 @@ export default function Header() {
           </button>
         </div>
       </div>
-            {searchOpen && (
-        <form className="hsearch wrap" onSubmit={submitSearch}>
-          <input
-            autoFocus
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={t('Введите название детали или артикул')}
-            aria-label="Поиск"
-          />
-          <button className="btn">{t('Найти')}</button>
-        </form>
-      )}
       {open && (
         <div className="mnav" onClick={() => setOpen(false)}>
           <Link to="/">{t('Главная')}</Link>

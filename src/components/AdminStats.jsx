@@ -10,6 +10,31 @@ import StatCard from './StatCard.jsx'
 const COLORS = ['#d92b2b', '#17181b', '#6b7078', '#e8686b', '#9a9fa8', '#b81f1f', '#3a3d44']
 const tick = { fill: '#9a9fa8', fontSize: 12 }
 
+const formatTooltipValue = (entry, value) => {
+  if (entry?.dataKey === 'sales') return money(Number(value || 0))
+  if (entry?.dataKey === 'qty' || entry?.dataKey === 'orders' || entry?.dataKey === 'requests') return Number(value || 0)
+  return value
+}
+
+const ChartTooltip = ({ active, payload, label }) => {
+  if (!active || !payload || payload.length === 0) return null
+
+  return (
+    <div className="chart-tooltip">
+      {label && <div className="chart-tooltip-label">{label}</div>}
+      {payload
+        .filter((entry) => entry && entry.value !== undefined && entry.value !== null)
+        .map((entry, index) => (
+          <div className="chart-tooltip-row" key={`${entry.name || entry.dataKey || 'value'}-${index}`}>
+            <span className="chart-tooltip-mark" style={{ background: entry.color || entry.fill || '#d92b2b' }} />
+            <span className="chart-tooltip-name">{entry.name || entry.dataKey || 'Value'}</span>
+            <span className="chart-tooltip-value">{formatTooltipValue(entry, entry.value)}</span>
+          </div>
+        ))}
+    </div>
+  )
+}
+
 const PERIODS = [
   { key: 'day', label: 'День', unit: 'по часам' },
   { key: 'week', label: 'Неделя', unit: 'по дням' },
@@ -20,7 +45,6 @@ const MONTHS = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'и�
 const two = (n) => String(n).padStart(2, '0')
 
 // Время заказа или заявки в миллисекундах.
-// У новых записей есть createdAt, у старых разбираем текстовую дату «20.10.2026, 16:03:12».
 function getTime(x) {
   if (typeof x.createdAt === 'number') return x.createdAt
   const m = String(x.date || '').match(/(\d{2})\.(\d{2})\.(\d{4})(?:,?\s*(\d{2}):(\d{2}))?/)
@@ -55,14 +79,16 @@ function makeBuckets(period) {
 }
 
 export default function AdminStats() {
-  const { orders, requests } = useStore()
+  const { orders, requests, t } = useStore()
   const [period, setPeriod] = useState('week')
 
   if (orders.length === 0 && requests.length === 0) {
-    return <p className="muted">Пока нет заказов. Оформите несколько тестовых заказов, и здесь появятся графики.</p>
+    return <p className="muted">{t('Пока нет заказов. Оформите несколько тестовых заказов, и здесь появятся графики.')}</p>
   }
 
   const current = PERIODS.find((p) => p.key === period)
+  const currentLabel = t(current.label)
+  const currentUnit = t(current.unit)
   const buckets = makeBuckets(period)
   const start = buckets[0].from
   const end = buckets[buckets.length - 1].to
@@ -119,85 +145,85 @@ export default function AdminStats() {
       <div className="periods">
         {PERIODS.map((p) => (
           <button key={p.key} type="button" className={period === p.key ? 'on' : ''} onClick={() => setPeriod(p.key)}>
-            {p.label}
+            {t(p.label)}
           </button>
         ))}
       </div>
 
       <div className="stats">
-        <StatCard title="Заказов" value={ordersP.length} />
-        <StatCard title="Продажи" value={money(revenue)} />
-        <StatCard title="Товаров продано" value={itemsCount} />
-        <StatCard title="Средний чек" value={money(ordersP.length ? Math.round(revenue / ordersP.length) : 0)} />
-        <StatCard title="Заявок на запчасти" value={requestsP.length} />
+        <StatCard title={t('Заказов')} value={ordersP.length} />
+        <StatCard title={t('Продажи')} value={money(revenue)} />
+        <StatCard title={t('Товаров продано')} value={itemsCount} />
+        <StatCard title={t('Средний чек')} value={money(ordersP.length ? Math.round(revenue / ordersP.length) : 0)} />
+        <StatCard title={t('Заявок на запчасти')} value={requestsP.length} />
       </div>
 
       {ordersP.length === 0 && requestsP.length === 0 && (
-        <p className="muted">За выбранный период ({current.label.toLowerCase()}) заказов и заявок нет. Попробуйте другой период.</p>
+        <p className="muted">{t('За выбранный период')} ({currentLabel.toLowerCase()}) {t('заказов и заявок нет. Попробуйте другой период.')}</p>
       )}
 
       <div className="charts">
         <div className="box">
-          <h3 className="h2s">Заказы {current.unit}</h3>
-          <ResponsiveContainer width="100%" height={240}>
+          <h3 className="h2s">{t('Заказы')} {currentUnit}</h3>
+          <ResponsiveContainer width="100%" height={200}>
             <BarChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="#8884" />
               <XAxis dataKey="day" tick={tick} interval={xInterval} />
               <YAxis allowDecimals={false} tick={tick} />
-              <Tooltip />
-              <Bar dataKey="orders" name="Заказы" fill="#d92b2b" radius={[6, 6, 0, 0]} />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(217, 43, 43, 0.10)' }} />
+              <Bar dataKey="orders" name={t('Заказы')} fill="#d92b2b" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="box">
-          <h3 className="h2s">Продажи {current.unit}, сом</h3>
-          <ResponsiveContainer width="100%" height={240}>
+          <h3 className="h2s">{t('Продажи')} {currentUnit}, {t('сом')}</h3>
+          <ResponsiveContainer width="100%" height={200}>
             <LineChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="#8884" />
               <XAxis dataKey="day" tick={tick} interval={xInterval} />
               <YAxis tick={tick} />
-              <Tooltip formatter={(v) => money(v)} />
-              <Line type="monotone" dataKey="sales" name="Продажи" stroke="#d92b2b" strokeWidth={3} />
+              <Tooltip content={<ChartTooltip />} cursor={{ stroke: 'rgba(217, 43, 43, 0.45)', strokeWidth: 1, strokeDasharray: '5 5' }} />
+              <Line type="monotone" dataKey="sales" name={t('Продажи')} stroke="#d92b2b" strokeWidth={3} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         <div className="box">
-          <h3 className="h2s">Популярные товары</h3>
-          <ResponsiveContainer width="100%" height={240}>
+          <h3 className="h2s">{t('Популярные товары')}</h3>
+          <ResponsiveContainer width="100%" height={200}>
             <BarChart data={top} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#8884" />
               <XAxis type="number" allowDecimals={false} tick={tick} />
               <YAxis type="category" dataKey="name" width={130} tick={tick} />
-              <Tooltip />
-              <Bar dataKey="qty" name="Продано, шт." fill="#d92b2b" radius={[0, 6, 6, 0]} />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(217, 43, 43, 0.10)' }} />
+              <Bar dataKey="qty" name={t('Продано, шт.')} fill="#d92b2b" radius={[0, 6, 6, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="box">
-          <h3 className="h2s">Продажи по категориям</h3>
-          <ResponsiveContainer width="100%" height={240}>
+          <h3 className="h2s">{t('Продажи по категориям')}</h3>
+          <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={cats} dataKey="value" nameKey="name" outerRadius={85}>
+              <Pie data={cats} dataKey="value" nameKey="name" outerRadius={78}>
                 {cats.map((c, i) => <Cell key={c.name} fill={COLORS[i % COLORS.length]} />)}
               </Pie>
-              <Tooltip formatter={(v) => money(v)} />
-              <Legend />
+              <Tooltip content={<ChartTooltip />} />
+              <Legend wrapperStyle={{ paddingTop: 10 }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
 
         <div className="box">
-          <h3 className="h2s">Заявки на запчасти {current.unit}</h3>
-          <ResponsiveContainer width="100%" height={240}>
+          <h3 className="h2s">{t('Заявки на запчасти')} {currentUnit}</h3>
+          <ResponsiveContainer width="100%" height={200}>
             <BarChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="#8884" />
               <XAxis dataKey="day" tick={tick} interval={xInterval} />
               <YAxis allowDecimals={false} tick={tick} />
-              <Tooltip />
-              <Bar dataKey="requests" name="Заявки" fill="#6b7078" radius={[6, 6, 0, 0]} />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(107, 112, 120, 0.12)' }} />
+              <Bar dataKey="requests" name={t('Заявки')} fill="#6b7078" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

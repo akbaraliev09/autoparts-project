@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="footer-grid">
           <div className="footer-col footer-brand">
             <div className="footer-logo" aria-label="AutoParts KG">
-              <span className="footer-logo-mark">AP</span>
+              <img src="/images/categories/icon.png" alt="" className="logo-img footer-logo-img" />
               <span>AutoParts KG</span>
             </div>
             <p>
@@ -19,16 +19,16 @@ export default function Footer() {
           </div>
 
           <div className="footer-col">
-            <h4 className="footer-title">Контакты</h4>
+            <h4 className="footer-title">{t('Контакты')}</h4>
             <ul className="footer-list">
               <li>
-                <a href="tel:+996555123456" aria-label="Позвонить по телефону">
+                <a href="tel:+996555123456" aria-label={t('Позвонить по телефону')}>
                   <i className="fa-solid fa-phone" aria-hidden="true"></i>
                   +996 (555) 123-456
                 </a>
               </li>
               <li>
-                <a href="mailto:info@autoparts.kg" aria-label="Написать письмо">
+                <a href="mailto:info@autoparts.kg" aria-label={t('Написать письмо')}>
                   <i className="fa-solid fa-envelope" aria-hidden="true"></i>
                   info@autoparts.kg
                 </a>
@@ -36,23 +36,23 @@ export default function Footer() {
               <li>
                 <span>
                   <i className="fa-regular fa-clock" aria-hidden="true"></i>
-                  Пн–Сб: 09:00–19:00
+                  {t('Пн–Сб: 09:00–19:00')}
                 </span>
               </li>
             </ul>
           </div>
 
           <div className="footer-col">
-            <h4 className="footer-title">Адрес</h4>
+            <h4 className="footer-title">{t('Адрес')}</h4>
             <p className="footer-address">
               <i className="fa-solid fa-location-dot" aria-hidden="true"></i>
-              Бишкек, ул. Лермонтова 24, ТЦ «АвтоМир», 2 этаж
+              {t('Бишкек, ул. Лермонтова 24, ТЦ «АвтоМир», 2 этаж')}
             </p>
           </div>
 
           <div className="footer-col">
-            <h4 className="footer-title">Соцсети</h4>
-            <div className="social-links" aria-label="Социальные сети">
+            <h4 className="footer-title">{t('Соцсети')}</h4>
+            <div className="social-links" aria-label={t('Социальные сети')}>
               <a href="https://wa.me/996555123456" target="_blank" rel="noreferrer" aria-label="WhatsApp">
                 <i className="fa-brands fa-whatsapp" aria-hidden="true"></i>
               </a>
@@ -69,7 +69,7 @@ export default function Footer() {
 
       <div className="footer-bottom">
         <div className="wrap footer-bottom-inner">
-          <span>© {year} Все права защищены</span>
+          <span>© {year} {t('Все права защищены')}</span>
         </div>
       </div>
     </footer>

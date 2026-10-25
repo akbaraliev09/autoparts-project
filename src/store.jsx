@@ -207,13 +207,16 @@ export function StoreProvider({ children }) {
   )
 }, [user?.email, adminEmails])
   useEffect(() => {
-    const isAdminUser = !!user && adminEmails.includes((user.email || '').toLowerCase())
-    if (!isAdminUser) {
+    if (!user) {
       setRequests([])
       return
     }
+    const isAdminUser = adminEmails.includes((user.email || '').toLowerCase())
+    const q = isAdminUser
+      ? collection(db, 'requests')
+      : query(collection(db, 'requests'), where('email', '==', user.email))
     return onSnapshot(
-      collection(db, 'requests'),
+      q,
       (snap) => setRequests(snap.docs.map((d) => d.data()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))),
       (err) => console.error('requests', err)
     )
@@ -221,6 +224,30 @@ export function StoreProvider({ children }) {
    const isAdmin = !!user && adminEmails.includes((user.email || '').toLowerCase())
    const updateOrderStatus = (id, status) =>
   updateDoc(doc(db, 'orders', id), { status }).catch(() => notify('Не удалось изменить статус'))
+
+  const cancelOrder = async (id) => {
+    if (!user) return notify('Сначала войдите в аккаунт')
+    try {
+      const ref = doc(db, 'orders', id)
+      const snap = await getDoc(ref)
+      if (!snap.exists()) return notify('Заказ не найден')
+
+      const order = snap.data()
+      if ((order.email || '').toLowerCase() !== (user.email || '').toLowerCase()) {
+        return notify('Нельзя отменить чужой заказ')
+      }
+      if (['Отменён', 'Доставлен'].includes(order.status)) {
+        return notify('Этот заказ уже нельзя отменить')
+      }
+
+      await updateDoc(ref, { status: 'Отменён' })
+      notify('Заказ отменён')
+    } catch (e) {
+      console.error('cancelOrder', e)
+      notify('Не удалось отменить заказ')
+    }
+  }
+
      const submitRequest = async (data) => {
     const id = 'ZP-' + Date.now().toString().slice(-6)
     const req = { id, ...data, status: 'Новая', createdAt: Date.now(), date: new Date().toLocaleString('ru-RU') }
@@ -238,7 +265,7 @@ export function StoreProvider({ children }) {
   const updateRequestStatus = (id, status) =>
     updateDoc(doc(db, 'requests', id), { status }).catch(() => notify('Не удалось изменить статус'))
   return (
-    <Ctx.Provider value={{ requests, submitRequest, updateRequestStatus, loginGoogle, isAdmin, updateOrderStatus, users, cart, favs, user, orders, car, setCar, toast, cartCount, addToCart, setQty, toggleFav, register, login, logout, placeOrder, fits, theme, toggleTheme, reviews, addReview, lang, setLang, t, products, productsLoading, refreshProducts, notify }}>
+    <Ctx.Provider value={{ requests, submitRequest, updateRequestStatus, loginGoogle, isAdmin, updateOrderStatus, cancelOrder, users, cart, favs, user, orders, car, setCar, toast, cartCount, addToCart, setQty, toggleFav, register, login, logout, placeOrder, fits, theme, toggleTheme, reviews, addReview, lang, setLang, t, products, productsLoading, refreshProducts, notify }}>
       {children}
       <div className={'toast' + (toast ? ' show' : '')} role="status">{t(toast)}</div>
     </Ctx.Provider>

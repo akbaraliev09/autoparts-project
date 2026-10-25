@@ -3,8 +3,8 @@ import { useStore } from '../store.jsx'
 const STATUSES = ['Новая', 'В работе', 'Выполнена', 'Отклонена']
 
 export default function AdminRequests() {
-  const { requests, updateRequestStatus } = useStore()
-  if (requests.length === 0) return <p className="muted">Заявок пока нет.</p>
+  const { requests, updateRequestStatus, t } = useStore()
+  if (requests.length === 0) return <p className="muted">{t('Заявок пока нет.')}</p>
   return (
     <div>
       {requests.map((r) => (
@@ -12,12 +12,12 @@ export default function AdminRequests() {
           <div className="oh">
             <b>{r.id}</b>
             <select value={r.status} onChange={(e) => updateRequestStatus(r.id, e.target.value)}>
-              {STATUSES.map((s) => <option key={s}>{s}</option>)}
+              {STATUSES.map((s) => <option key={s}>{t(s)}</option>)}
             </select>
           </div>
           <div className="muted">{r.date} · {r.name}, {r.phone}{r.email ? ' · ' + r.email : ''}</div>
-          <p><b>Автомобиль:</b> {r.car}</p>
-          <p><b>Нужная деталь:</b> {r.part}</p>
+          <p><b>{t('Автомобиль')}:</b> {r.car}</p>
+          <p><b>{t('Нужная деталь')}:</b> {r.part}</p>
         </div>
       ))}
     </div>

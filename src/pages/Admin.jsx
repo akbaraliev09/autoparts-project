@@ -12,16 +12,6 @@ import { CATEGORIES, money } from '../data.js'
 
 const EMPTY = { name: '', article: '', brand: '', category: 'Двигатель', price: '', stock: 10, seller: 'AutoParts KG', image: '', description: '', specsText: '' }
 
-// Разделы дашборда. key попадает в адрес (/admin?tab=products), поэтому после обновления страницы раздел не сбрасывается
-const TABS = [
-  { key: 'stats', label: 'Статистика', icon: '📊' },
-  { key: 'orders', label: 'Заказы', icon: '🧾' },
-  { key: 'requests', label: 'Заявки', icon: '✉️' },
-  { key: 'products', label: 'Товары', icon: '📦' },
-  { key: 'users', label: 'Пользователи', icon: '👥' },
-  { key: 'admins', label: 'Администраторы', icon: '🛡️' },
-]
-
 // Превращает строки "Тип: Синтетика" в объект
 const parseSpecs = (text) =>
   Object.fromEntries(
@@ -36,11 +26,20 @@ const parseSpecs = (text) =>
 const specsToText = (specs) => Object.entries(specs || {}).map(([k, v]) => `${k}: ${v}`).join('\n')
 
 export default function Admin() {
-  const { products, refreshProducts, notify } = useStore()
+  const { products, refreshProducts, notify, t } = useStore()
   const [params, setParams] = useSearchParams()
+  const TABS = [
+    { key: 'stats', label: t('Статистика'), icon: '📊' },
+    { key: 'orders', label: t('Заказы'), icon: '🧾' },
+    { key: 'requests', label: t('Заявки'), icon: '✉️' },
+    { key: 'products', label: t('Товары'), icon: '📦' },
+    { key: 'users', label: t('Пользователи'), icon: '👥' },
+    { key: 'admins', label: t('Администраторы'), icon: '🛡️' },
+  ]
   const [form, setForm] = useState(EMPTY)
   const [editId, setEditId] = useState(null)
   const [showForm, setShowForm] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [query, setQuery] = useState('')
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
 
@@ -80,12 +79,18 @@ export default function Admin() {
     window.scrollTo(0, 0)
   }
 
+  const confirmDelete = () => {
+    if (!deleteTarget) return
+    run(() => deleteProduct(deleteTarget.id), t('Товар удалён'))
+    setDeleteTarget(null)
+  }
+
   const q = query.trim().toLowerCase()
   const shown = q ? products.filter((p) => (p.name + ' ' + p.brand + ' ' + p.article).toLowerCase().includes(q)) : products
 
   return (
     <div className="wrap page">
-      <h1 className="h1s">Админ-панель</h1>
+      <h1 className="h1s">{t('Админ-панель')}</h1>
 
       <div className="dash">
         <div className="dnav" role="navigation" aria-label="Разделы админ-панели">
@@ -105,89 +110,89 @@ export default function Admin() {
         <div className="dmain">
           {tab === 'stats' && (
             <>
-              <h2 className="h2s">Статистика</h2>
+              <h2 className="h2s">{t('Статистика')}</h2>
               <AdminStats />
             </>
           )}
 
           {tab === 'orders' && (
             <>
-              <h2 className="h2s">Заказы</h2>
+              <h2 className="h2s">{t('Заказы')}</h2>
               <AdminOrders />
             </>
           )}
 
           {tab === 'requests' && (
             <>
-              <h2 className="h2s">Заявки на запчасти</h2>
+              <h2 className="h2s">{t('Заявки на запчасти')}</h2>
               <AdminRequests />
             </>
           )}
 
           {tab === 'users' && (
             <>
-              <h2 className="h2s">Пользователи</h2>
+              <h2 className="h2s">{t('Пользователи')}</h2>
               <AdminUsers />
             </>
           )}
 
           {tab === 'admins' && (
             <>
-              <h2 className="h2s">Администраторы</h2>
+              <h2 className="h2s">{t('Администраторы')}</h2>
               <AdminAdmins />
             </>
           )}
 
           {tab === 'products' && (
             <>
-              {!API_URL && <p className="bad">Адрес API не указан: откройте src/api.js и вставьте ссылку на MockAPI в API_URL. Пока сайт работает на локальных данных, изменения не сохраняются.</p>}
+              {!API_URL && <p className="bad">{t('Адрес API не указан: откройте src/api.js и вставьте ссылку на MockAPI в API_URL. Пока сайт работает на локальных данных, изменения не сохраняются.')}</p>}
 
               <div className="dhead">
-                <h2 className="h2s">Товары ({products.length})</h2>
+                <h2 className="h2s">{t('Товары')} ({products.length})</h2>
                 {!showForm && (
-                  <button className="btn" onClick={() => setShowForm(true)}>+ Добавить товар</button>
+                  <button className="btn" onClick={() => setShowForm(true)}>+ {t('Добавить товар')}</button>
                 )}
               </div>
 
               {showForm && (
                 <form className="box" onSubmit={submit}>
-                  <h2 className="h2s">{editId ? 'Изменить товар' : 'Добавить товар'}</h2>
+                  <h2 className="h2s">{editId ? t('Изменить товар') : t('Добавить товар')}</h2>
                   <div className="aform">
-                    <label>Название<input required value={form.name} onChange={set('name')} /></label>
-                    <label>Артикул<input required value={form.article} onChange={set('article')} /></label>
-                    <label>Бренд<input required value={form.brand} onChange={set('brand')} /></label>
-                    <label>Категория
+                    <label>{t('Название')}<input required value={form.name} onChange={set('name')} /></label>
+                    <label>{t('Артикул')}<input required value={form.article} onChange={set('article')} /></label>
+                    <label>{t('Бренд')}<input required value={form.brand} onChange={set('brand')} /></label>
+                    <label>{t('Категория')}
                       <select value={form.category} onChange={set('category')}>
                         {CATEGORIES.map((c) => <option key={c.name}>{c.name}</option>)}
                       </select>
                     </label>
-                    <label>Цена, сом<input required type="number" min="0" value={form.price} onChange={set('price')} /></label>
-                    <label>В наличии, шт.<input required type="number" min="0" value={form.stock} onChange={set('stock')} /></label>
-                    <label className="wide">Фото (путь или ссылка)<input placeholder="/images/products/brake-pads.jpg" value={form.image} onChange={set('image')} /></label>
+                    <label>{t('Цена, сом')}<input required type="number" min="0" value={form.price} onChange={set('price')} /></label>
+                    <label>{t('В наличии, шт.')}<input required type="number" min="0" value={form.stock} onChange={set('stock')} /></label>
+                    <label className="wide">{t('Фото (путь или ссылка)')}<input placeholder="/images/products/brake-pads.jpg" value={form.image} onChange={set('image')} /></label>
                     <div className="wide">
                       <ImageUpload value={form.image} onChange={(url) => setForm({ ...form, image: url })} />
                     </div>
-                    <label className="wide">Описание<input value={form.description} onChange={set('description')} /></label>
-                    <label className="wide">Характеристики (каждая с новой строки, в виде Название: значение)
+                    <label className="wide">{t('Описание')}<input value={form.description} onChange={set('description')} /></label>
+                    <label className="wide">{t('Характеристики (каждая с новой строки, в виде Название: значение)')}
                       <textarea rows="5" placeholder={'Тип: Синтетика\nОбъём: 4 л\nГарантия: 12 месяцев'} value={form.specsText} onChange={set('specsText')} />
                     </label>
                   </div>
                   <div className="row2">
-                    <button className="btn">{editId ? 'Сохранить' : 'Добавить'}</button>
-                    <button type="button" className="btn ghost" onClick={closeForm}>Отмена</button>
+                    <button className="btn">{editId ? t('Сохранить') : t('Добавить')}</button>
+                    <button type="button" className="btn ghost" onClick={closeForm}>{t('Отмена')}</button>
                   </div>
                 </form>
               )}
 
               {API_URL && products.length === 0 && (
-                <button className="btn" onClick={() => run(seedProducts, 'Демо-товары загружены')}>Загрузить демо-товары в API</button>
+                <button className="btn" onClick={() => run(seedProducts, t('Демо-товары загружены'))}>{t('Загрузить демо-товары в API')}</button>
               )}
 
               {products.length > 0 && (
                 <input
                   className="dsearch"
                   type="search"
-                  placeholder="Поиск по названию, бренду, артикулу"
+                  placeholder={t('Поиск по названию, бренду, артикулу')}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   aria-label="Поиск товара"
@@ -198,15 +203,39 @@ export default function Admin() {
                 <div className="arow" key={p.id}>
                   <div><b>{p.name}</b><div className="art">{p.brand} · {p.article}</div></div>
                   <span className="price">{money(p.price)}</span>
-                  <button className="btn ghost" onClick={() => edit(p)}>Изменить</button>
-                  <button className="btn ghost" onClick={() => window.confirm('Удалить товар?') && run(() => deleteProduct(p.id), 'Товар удалён')}>Удалить</button>
+                  <button className="btn ghost" onClick={() => edit(p)}>{t('Изменить')}</button>
+                  <button className="btn ghost danger" onClick={() => setDeleteTarget(p)}>{t('Удалить')}</button>
                 </div>
               ))}
-              {q && shown.length === 0 && <p className="mutep">Ничего не найдено.</p>}
+              {q && shown.length === 0 && <p className="mutep">{t('Ничего не найдено.')}</p>}
             </>
           )}
         </div>
       </div>
+
+      {deleteTarget && (
+        <div className="modal" onClick={() => setDeleteTarget(null)}>
+          <div className="box delete-confirm" onClick={(e) => e.stopPropagation()}>
+            <div className="delete-head">
+              <span className="delete-icon">⚠</span>
+              <div>
+                <h3>{t('Удалить товар?')}</h3>
+                <p>{t('Это действие нельзя будет отменить.')}</p>
+              </div>
+            </div>
+
+            <div className="delete-product">
+              <strong>{deleteTarget.name}</strong>
+              <span>{deleteTarget.brand} · {deleteTarget.article}</span>
+            </div>
+
+            <div className="delete-actions">
+              <button className="btn danger-btn" onClick={confirmDelete}>{t('Да, удалить')}</button>
+              <button className="btn ghost" onClick={() => setDeleteTarget(null)}>{t('Отмена')}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
