@@ -46,7 +46,6 @@ export default function Header() {
         <nav>
           <NavLink to="/" end>{t('Главная')}</NavLink>
           <NavLink to="/catalog">{t('Каталог')}</NavLink>
-          <NavLink to="/categories">{t('Категории')}</NavLink>
           <NavLink to="/about">{t('О нас')}</NavLink>
           <a href="#site-footer" onClick={handleContactsClick}>{t('Контакты')}</a>
         </nav>
@@ -66,7 +65,6 @@ export default function Header() {
         <div className="mnav" onClick={() => setOpen(false)}>
           <Link to="/">{t('Главная')}</Link>
           <Link to="/catalog">{t('Каталог')}</Link>
-          <Link to="/categories">{t('Категории')}</Link>
           <Link to="/about">{t('О нас')}</Link>
           <a href="#site-footer" onClick={handleContactsClick}>{t('Контакты')}</a>
           <Link to="/contacts#request">{t('Заказать запчасть')}</Link>
